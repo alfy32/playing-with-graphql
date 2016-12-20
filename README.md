@@ -2,6 +2,7 @@
 This is my test to see how hard it is to work with graphql. 
 
 ### Running locally
+mvn clean install
 Run Application.java from Intellij
 POST to /graphql with the following body: 
 ```
