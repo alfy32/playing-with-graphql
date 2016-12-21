@@ -109,14 +109,25 @@
       function graphQLFetcher(graphQLParams) {
         // This example expects a GraphQL server at the path /graphql.
         // Change this to point wherever you host your GraphQL server.
+
+        // We need this to be an object to work with Java
+        if (typeof graphQLParams.variables === 'string') {
+          try {
+            graphQLParams.variables = JSON.parse(graphQLParams.variables || '{}');
+          } catch (e) {
+            // Do nothing, we want to display the invalid JSON as a string, rather
+            // than present an error.
+          }
+        }
+
         return fetch('/graphql', {
           method: 'post',
           headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify(graphQLParams),
-          credentials: 'include',
+          credentials: 'include'
         }).then(function (response) {
           return response.text();
         }).then(function (responseBody) {
