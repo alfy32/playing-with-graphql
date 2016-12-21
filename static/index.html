@@ -69,7 +69,8 @@
       // if variables was provided, try to format it.
       if (parameters.variables) {
         try {
-          parameters.variables = JSON.parse(parameters.variables);
+          parameters.variables =
+            JSON.stringify(JSON.parse(parameters.variables), null, 2);
         } catch (e) {
           // Do nothing, we want to display the invalid JSON as a string, rather
           // than present an error.
