@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -21,17 +20,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class WebConfig extends WebMvcConfigurerAdapter {
   private static final Logger LOGGER = LoggerFactory.getLogger(WebConfig.class);
-
-//  @Bean
-//  public RequestContextListener requestContextListener() {
-//    return new RequestContextListener();
-//  }
-
-//  @Bean
-//  public RestTemplate restTemplate() {
-//    RestTemplate restTemplate = new RestTemplate();
-//    return restTemplate;
-//  }
 
   @Bean
   public RestTemplate restTemplate(List<ClientHttpRequestInterceptor> interceptors) {
@@ -74,13 +62,12 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
       @Override
       public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
-        httpServletRequest.setAttribute("endTime", Clock.systemUTC().millis());
       }
 
       @Override
       public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
         long start = (long) httpServletRequest.getAttribute("startTime");
-        long end = (long) httpServletRequest.getAttribute("endTime");
+        long end = Clock.systemUTC().millis();
 
         LOGGER.info("Resource Logger:" +
             " duration=" + (end - start) +

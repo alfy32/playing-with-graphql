@@ -1,5 +1,6 @@
 package com.alfy.graphql.rest.schema;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,10 +29,18 @@ public class GraphQLRequestBody {
   }
 
   public Map<String, Object> getVariables() {
+    if (variables == null) {
+      return new HashMap<>();
+    }
     return variables;
   }
 
   public void setVariables(Map<String, Object> variables) {
-    this.variables = variables;
+    if (variables == null) {
+      this.variables = new HashMap<>();
+    }
+    else {
+      this.variables = variables;
+    }
   }
 }
