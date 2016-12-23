@@ -1,29 +1,28 @@
 package com.alfy.graphql.rest.controller;
 
+import java.util.Collections;
+
 import com.alfy.graphql.PersonService;
 import com.alfy.graphql.rest.schema.Person;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.WebApplicationContext;
 
 @Controller
-public class PersonController {
-  private static final Logger LOGGER = LoggerFactory.getLogger(PersonController.class);
+@Scope(WebApplicationContext.SCOPE_REQUEST)
+class PersonController {
 
   private final PersonService personService;
-  private final String sessionId;
 
   @Autowired
-  public PersonController(PersonService personService, Environment environment) {
+  public PersonController(PersonService personService) {
     this.personService = personService;
-    this.sessionId = environment.getRequiredProperty("sessionId");
   }
 
   @RequestMapping(
@@ -33,6 +32,6 @@ public class PersonController {
   )
   @ResponseBody
   public Person executeOperation(@PathVariable(name = "id") String personId) {
-    return personService.getPersonById(personId, "Bearer " + sessionId);
+    return personService.getPersonById(Collections.singletonList(personId)).get(0);
   }
 }

@@ -6,8 +6,8 @@ import graphql.schema.DataFetchingEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PortraitUrlDataFetcher implements DataFetcher {
-  private static final Logger LOGGER = LoggerFactory.getLogger(PortraitUrlDataFetcher.class);
+public class WatchDataFetcher implements DataFetcher {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WatchDataFetcher.class);
 
   @Override
   public Object get(DataFetchingEnvironment dataFetchingEnvironment) {
@@ -21,7 +21,7 @@ public class PortraitUrlDataFetcher implements DataFetcher {
       Person person = (Person) dataFetchingEnvironment.getSource();
       String personId = person.getId();
 
-      value = context.getPortraitService().getPersonById(personId);
+      value = context.getWatchService().watchingPerson(personId);
     }
 
     LOGGER.info("Ending " + this.getClass().getSimpleName());

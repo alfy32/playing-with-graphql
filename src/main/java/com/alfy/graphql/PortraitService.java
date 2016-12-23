@@ -3,6 +3,7 @@ package com.alfy.graphql;
 import java.util.Map;
 import java.util.Optional;
 
+import com.alfy.graphql.rest.SessionId;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
@@ -21,15 +22,17 @@ public class PortraitService {
 
   private final RestTemplate restTemplate;
   private final String artifactManagerUri;
+  private final SessionId sessionId;
 
-  public PortraitService(RestTemplate restTemplate, Environment environment) {
+  public PortraitService(RestTemplate restTemplate, Environment environment, SessionId sessionId) {
     this.restTemplate = restTemplate;
     this.artifactManagerUri = environment.getRequiredProperty("artifact-manager.uri");
+    this.sessionId = sessionId;
   }
 
-  public String getPersonById(String id, String authorizationToken) {
+  public String getPersonById(String id) {
     HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.set(HttpHeaders.AUTHORIZATION, authorizationToken);
+    httpHeaders.set(HttpHeaders.AUTHORIZATION, sessionId.getAuthorizationToken());
 
     UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(artifactManagerUri)
         .path("/persons/personsByTreePersonId/{0}/summary")
