@@ -3,6 +3,7 @@ package com.alfy.graphql;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.alfy.graphql.rest.schema.Person;
 import graphql.GraphQL;
 import graphql.Scalars;
 import graphql.execution.ExecutionStrategy;
@@ -42,10 +43,16 @@ public class GraphQLConfig {
         .name("FamilySearchQuery")
         .description("This will define all of the data at FamilySearch")
         .field(newFieldDefinition()
+            .name("persons")
             .type(new GraphQLList(personType()))
             .argument(argument -> argument.name("ids").type(new GraphQLList(Scalars.GraphQLString)))
-            .name("persons")
-            .dataFetcher(new PersonDataFetcher())
+            .dataFetcher(new PersonsIdsDataFetcher())
+        )
+        .field(newFieldDefinition()
+            .name("person")
+            .argument(argument -> argument.name("id").type(Scalars.GraphQLString))
+            .type(personType())
+            .dataFetcher(new PersonIdDataFetcher())
         )
         .field(newFieldDefinition().type(userType()).name("user").dataFetcher(new BaseDataFetcher()))
         .build();
@@ -56,17 +63,17 @@ public class GraphQLConfig {
   }
 
   private GraphQLObjectType personType() {
-    GraphQLEnumType sexEnum = GraphQLEnumType.newEnum().name("Sex").value("MALE").value("FEMALE").build();
+    GraphQLEnumType sexEnum = GraphQLEnumType.newEnum().name("Sex").value("MALE").value("FEMALE").value("UNKNOWN").build();
 
     return newObject()
         .name("Person")
         .description("A person from the tree")
-        .field(newFieldDefinition().name("status").type(Scalars.GraphQLString))
+        .field(newFieldDefinition().name("status").type(Scalars.GraphQLString).dataFetcher(new PersonDataFetcher(Person::getStatus)))
         .field(newFieldDefinition().name("id").type(Scalars.GraphQLString))
-        .field(newFieldDefinition().name("sex").type(sexEnum))
-        .field(newFieldDefinition().name("name").type(Scalars.GraphQLString))
-        .field(newFieldDefinition().name("lifespan").type(Scalars.GraphQLString))
-        .field(newFieldDefinition().name("living").type(Scalars.GraphQLBoolean))
+        .field(newFieldDefinition().name("sex").type(sexEnum).dataFetcher(new PersonDataFetcher(Person::getSex)))
+        .field(newFieldDefinition().name("name").type(Scalars.GraphQLString).dataFetcher(new PersonDataFetcher(Person::getName)))
+        .field(newFieldDefinition().name("lifespan").type(Scalars.GraphQLString).dataFetcher(new PersonDataFetcher(Person::getLifespan)))
+        .field(newFieldDefinition().name("living").type(Scalars.GraphQLBoolean).dataFetcher(new PersonDataFetcher(Person::isLiving)))
         .field(newFieldDefinition().name("portraitUrl").type(Scalars.GraphQLString).dataFetcher(new PortraitUrlDataFetcher()))
         .field(newFieldDefinition().name("watching").type(Scalars.GraphQLBoolean).dataFetcher(new WatchDataFetcher()))
         .build();

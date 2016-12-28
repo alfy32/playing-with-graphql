@@ -1,7 +1,5 @@
 package com.alfy.graphql.rest.controller;
 
-import java.util.Collections;
-
 import com.alfy.graphql.PersonService;
 import com.alfy.graphql.rest.schema.Person;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +30,6 @@ class PersonController {
   )
   @ResponseBody
   public Person executeOperation(@PathVariable(name = "id") String personId) {
-    return personService.getPersonById(Collections.singletonList(personId)).get(0);
+    return personService.getPersonById(personId).join();
   }
 }

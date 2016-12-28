@@ -9,6 +9,10 @@ public class Person {
   private String lifespan;
   private boolean living;
 
+  public Person(String id) {
+    this.id = id;
+  }
+
   public Person(String status, String id, String sex, String name, String lifespan, boolean living) {
     this.status = status;
     this.id = id;

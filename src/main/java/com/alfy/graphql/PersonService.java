@@ -2,6 +2,8 @@ package com.alfy.graphql;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.alfy.graphql.rest.SessionId;
@@ -20,20 +22,54 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
-@Scope(WebApplicationContext.SCOPE_APPLICATION)
+@Scope(WebApplicationContext.SCOPE_REQUEST)
 public class PersonService {
 
   private final RestTemplate restTemplate;
   private final String tfUri;
   private final SessionId sessionId;
 
+  private final Map<String, CompletableFuture<Person>> inFlightPersons;
+
   public PersonService(RestTemplate restTemplate, Environment environment, SessionId sessionId) {
     this.restTemplate = restTemplate;
     this.tfUri = environment.getProperty("tf.uri", "http:/familysearch.org/tf");
     this.sessionId = sessionId;
+    this.inFlightPersons = new ConcurrentHashMap<>();
   }
 
-  public List<Person> getPersonById(List<String> ids) {
+  public synchronized CompletableFuture<Person> getPersonById(String id) {
+    if (inFlightPersons.containsKey(id)) {
+      return inFlightPersons.get(id);
+    }
+
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.set(HttpHeaders.AUTHORIZATION, sessionId.getAuthorizationToken());
+
+    UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(tfUri)
+        .path("/person/{id}/summary")
+        .buildAndExpand(id);
+
+    CompletableFuture<Person> personCompletableFuture = CompletableFuture.supplyAsync(() -> {
+      ResponseEntity<Map> responseEntity = restTemplate.exchange(uriComponents.toUri(), HttpMethod.GET, new HttpEntity<>(httpHeaders), Map.class);
+      Map person = responseEntity.getBody();
+      Map summary = (Map) person.get("summary");
+
+      return new Person(
+          "OK",
+          (String) person.get("id"),
+          (String) summary.get("gender"),
+          (String) summary.get("name"),
+          (String) summary.get("lifespan"),
+          (boolean) summary.get("living")
+      );
+    });
+
+    inFlightPersons.put(id, personCompletableFuture);
+    return personCompletableFuture;
+  }
+
+  public List<Person> getPersonsByIds(List<String> ids) {
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.set(HttpHeaders.AUTHORIZATION, sessionId.getAuthorizationToken());
 

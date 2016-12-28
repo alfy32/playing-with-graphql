@@ -1,5 +1,6 @@
 package com.alfy.graphql.rest.controller;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.alfy.graphql.GraphQLContext;
@@ -39,16 +40,22 @@ public class GraphQLController {
       produces = MediaType.APPLICATION_JSON_VALUE
   )
   @ResponseBody
-  public ExecutionResult executeOperation(@RequestBody GraphQLRequestBody requestBody) {
+  public Map<String, Object> executeOperation(@RequestBody GraphQLRequestBody requestBody) {
     String query = requestBody.getQuery();
     Map<String, Object> variables = requestBody.getVariables();
 
+    LOGGER.info("Starting graphQL");
     ExecutionResult executionResult = graphQL.execute(query, graphQLContext, variables);
+    LOGGER.info("Ending graphQL");
 
+    Map<String, Object> result = new LinkedHashMap<>();
     if (!executionResult.getErrors().isEmpty()) {
+      result.put("errors", executionResult.getErrors());
       LOGGER.error("Errors: {}", executionResult.getErrors());
     }
-
-    return executionResult;
+    if (executionResult.getData() != null) {
+      result.put("data", executionResult.getData());
+    }
+    return result;
   }
 }
